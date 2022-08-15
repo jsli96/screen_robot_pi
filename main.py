@@ -15,7 +15,7 @@ ROTATION_C2 = 20  # Motor encoder C2
 ROTATION_VCC = 16  # Encoder power line
 IR_1 = 23  # IR Sensor 1
 IR_2 = 24  # IR Sensor 2
-IR_VCC = 26  # IR Sensor Power line
+IR_VCC = 18  # IR Sensor Power line
 
 # --------------------Here below initial function-------------------
 camera = PiCamera()
@@ -113,7 +113,6 @@ def disconnect():
 @sio.on('request img')
 def start_send_img(data):
     print(data)
-    # send_img()
     return 'OK'
 
 
