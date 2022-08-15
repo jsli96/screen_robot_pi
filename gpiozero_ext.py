@@ -103,7 +103,6 @@ class Decoder:
         self.cbB = self.pi.callback(gpioB, pigpio.EITHER_EDGE, self._pulse)
 
     def _pulse(self, gpio, level, tick):
-
         """
       Decode the rotary encoder pulse.
 
