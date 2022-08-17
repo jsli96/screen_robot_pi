@@ -1,6 +1,7 @@
 import time
 import socketio
 import base64
+import pigpio
 from picamera import PiCamera
 from gpiozero import *
 from gpiozero_ext import Motor, PID
@@ -18,7 +19,7 @@ IR_2 = 24  # IR Sensor 2
 IR_VCC = 18  # IR Sensor Power line
 
 # --------------------Here below initial function-------------------
-camera = PiCamera()
+# camera = PiCamera()
 URL_LOCAL = 'http://127.0.0.1:5000/'
 URL_CLOUD = 'https://screen-bot-proj.herokuapp.com/'
 IR_SENSOR_1 = DigitalInputDevice(IR_1)  # Set up IR sensor 1
@@ -26,14 +27,29 @@ IR_SENSOR_2 = DigitalInputDevice(IR_2)  # Set up IR sensor 2
 ENCODER_VCC = DigitalOutputDevice(ROTATION_VCC, initial_value=True)
 IR_LED_VCC = DigitalOutputDevice(IR_VCC, initial_value=True)
 sio = socketio.Client()
-sio.connect(URL_CLOUD)
+# sio.connect(URL_CLOUD)
 POSITION = 0
-Rotation_Motor = Motor(pwm1=MOTOR_B_PHASE, pwm2=MOTOR_B_PWM, encoder1=ROTATION_C1,
+LENGTH = 0
+pi = pigpio.pi()
+Rotation_Motor = Motor(pi=pi, pwm1=MOTOR_B_PHASE, pwm2=MOTOR_B_PWM, encoder1=ROTATION_C1,
                        encoder2=ROTATION_C2, encoder_ppr=1666)
+Extension_Motor = Motor(pwm1=MOTOR_A_PHASE, pwm2=MOTOR_A_PWM)
 print("System initialized.")
 
 
 # ------------------Function------------------------------------
+def ir_plus():
+    global LENGTH
+    LENGTH += 2.5
+    print("Length: ", LENGTH)
+
+
+def ir_minus():
+    global LENGTH
+    LENGTH += -2.5
+    print("Length: ", LENGTH)
+
+
 def close_gpio():
     IR_SENSOR_1.close()
     IR_SENSOR_2.close()
@@ -88,6 +104,34 @@ def pid(target):
     Rotation_Motor.set_output(0, brake=False)
 
 
+def ir(target):
+    global LENGTH, Extension_Motor
+    ir_1_prev = IR_SENSOR_1.value
+    ir_2_prev = IR_SENSOR_2.value
+    t_sample = 0.01
+    kp = 1
+    ki = 0.0
+    kd = 0.0001
+    tau_pid = 0.01
+    extension_pid = PID(t_sample, kp, ki, kd, u_max=0.075, u_min=-0.075, tau=tau_pid)
+    while True:
+        ir_1_curr = IR_SENSOR_1.value
+        if target == LENGTH:
+            break
+        elif target > LENGTH and ir_1_prev == 1 and ir_1_curr == 0:
+            ir_plus()
+        elif target < LENGTH and ir_1_prev == 1 and ir_1_curr == 0:
+            ir_minus()
+        time.sleep(t_sample)
+        u_extension = extension_pid.control(target, LENGTH)
+        print("extension u: ", u_extension)
+        Extension_Motor.set_output(u_extension)
+        ir_1_prev = ir_1_curr
+        print("current length: ", LENGTH)
+
+
+
+
 # ------------------Socket event--------------------------------
 @sio.event
 def connect():
@@ -117,32 +161,41 @@ def start_send_img(data):
 
 
 # -------------------Main code start here----------------------------
-sio.emit("This is test in main function", "I am pi.")
-print("Start to take pictures")
-camera.capture('img_1.png')
-print("Image captured!")
-send_img("sample_img/img_1.jpeg")
-pid(30)
-time.sleep(0.5)
-print("Start to take pictures")
-camera.capture('img_2.png')
-print("Image captured!")
-send_img("sample_img/img_2.jpeg")
-pid(60)
-time.sleep(0.5)
-print("Start to take pictures")
-camera.capture('img_3.png')
-print("Image captured!")
-send_img("sample_img/img_3.jpeg")
-pid(0)
-time.sleep(0.5)
+# sio.emit("This is test in main function", "I am pi.")
+# print("Start to take pictures")
+# camera.capture('img_1.png')
+# print("Image captured!")
+# send_img("sample_img/img_1.jpeg")
+# pid(30)
+# time.sleep(0.5)
+# print("Start to take pictures")
+# camera.capture('img_2.png')
+# print("Image captured!")
+# send_img("sample_img/img_2.jpeg")
+# pid(60)
+# time.sleep(0.5)
+# print("Start to take pictures")
+# camera.capture('img_3.png')
+# print("Image captured!")
+# send_img("sample_img/img_3.jpeg")
+# pid(0)
+# time.sleep(0.5)
+
+# ------------------IR sensor test code------------------------------
+
+ir(10)
+time.sleep(1)
+ir(20)
+time.sleep(1)
 
 
 # ------------------End program code---------------------------------
 close_gpio()
 sio.disconnect()
-camera.close()
+# camera.close()
 del Rotation_Motor
+del Extension_Motor
+
 
 # -------------------Motor test code below----------------------------
 # pid(180)

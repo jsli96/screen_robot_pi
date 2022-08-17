@@ -3,18 +3,35 @@ import pigpio
 from gpiozero import DigitalOutputDevice, PWMOutputDevice
 
 
+# class IR:
+#     def __init__(self, pi=None, gpio1=None, gpio2=None, callback=None):
+#         if pi:
+#             self.pi = pi
+#         if gpio1 and callback:
+#             pi.set_mode(gpio1, pigpio.INPUT)
+#
+#         self.cb_1 = pi.callback(gpio1, pigpio.RISING_EDGE, self._notify)
+#
+#     def _notify(self, gpio, level, tick):
+#         self.callback(1)
+#
+#     def __del__(self):
+#         self.cb_1.cancel()
+
+
 class Motor:
     def __init__(
-            self, enable1=None, enable2=None, pwm1=None, pwm2=None,
+            self, pi=None, enable1=None, enable2=None, pwm1=None, pwm2=None,
             encoder1=None, encoder2=None, encoder_ppr=1666):
-        pi = pigpio.pi()
+        if pi:
+            self.pi = pi
         if pwm1 and pwm2:
             self._drv8833 = True
             self._pwm1 = PWMOutputDevice(pwm1)
             self._pwm2 = PWMOutputDevice(pwm2)
         else:
             raise Exception("Pin configuration is incorrect!")
-        if encoder1 and encoder2:
+        if encoder1 and encoder2 and pi:
             # self._encoder = RotaryEncoder(encoder1, encoder2, max_steps=0)
             self._encoder = Decoder(pi, encoder1, encoder2)
             self._ppr = encoder_ppr
