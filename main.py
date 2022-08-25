@@ -19,7 +19,7 @@ IR_2 = 24  # IR Sensor 2
 IR_VCC = 18  # IR Sensor Power line
 
 # --------------------Here below initial function-------------------
-# camera = PiCamera()
+camera = PiCamera()
 URL_LOCAL = 'http://127.0.0.1:5000/'
 URL_CLOUD = 'https://screen-bot-proj.herokuapp.com/'
 IR_SENSOR_1 = DigitalInputDevice(IR_1)  # Set up IR sensor 1
@@ -27,7 +27,7 @@ IR_SENSOR_2 = DigitalInputDevice(IR_2)  # Set up IR sensor 2
 ENCODER_VCC = DigitalOutputDevice(ROTATION_VCC, initial_value=True)
 IR_LED_VCC = DigitalOutputDevice(IR_VCC, initial_value=True)
 sio = socketio.Client()
-# sio.connect(URL_CLOUD)
+sio.connect(URL_CLOUD)
 POSITION = 0
 LENGTH = 0
 pi = pigpio.pi()
@@ -130,8 +130,6 @@ def ir(target):
         print("current length: ", LENGTH)
 
 
-
-
 # ------------------Socket event--------------------------------
 @sio.event
 def connect():
@@ -161,48 +159,53 @@ def start_send_img(data):
 
 
 # -------------------Main code start here----------------------------
-# sio.emit("This is test in main function", "I am pi.")
-# print("Start to take pictures")
-# camera.capture('img_1.png')
-# print("Image captured!")
-# send_img("sample_img/img_1.jpeg")
-# pid(30)
-# time.sleep(0.5)
-# print("Start to take pictures")
-# camera.capture('img_2.png')
-# print("Image captured!")
-# send_img("sample_img/img_2.jpeg")
-# pid(60)
-# time.sleep(0.5)
-# print("Start to take pictures")
-# camera.capture('img_3.png')
-# print("Image captured!")
-# send_img("sample_img/img_3.jpeg")
-# pid(0)
-# time.sleep(0.5)
+sio.emit("This is test in main function", "I am pi.")
+print("Start to take pictures")
+camera.capture('img_1.png')
+print("Image captured!")
+send_img("sample_img/img_1.jpeg")
+pid(30)
+time.sleep(0.5)
+print("Start to take pictures")
+camera.capture('img_2.png')
+print("Image captured!")
+send_img("sample_img/img_2.jpeg")
+pid(60)
+time.sleep(0.5)
+print("Start to take pictures")
+camera.capture('img_3.png')
+print("Image captured!")
+send_img("sample_img/img_3.jpeg")
+pid(0)
+time.sleep(0.5)
 
 # ------------------IR sensor test code------------------------------
 
-ir(10)
+ir(15)
 time.sleep(1)
-ir(20)
+ir(30)
 time.sleep(1)
-
-
-# ------------------End program code---------------------------------
-close_gpio()
-sio.disconnect()
-# camera.close()
-del Rotation_Motor
-del Extension_Motor
+ir(45)
+time.sleep(1)
 
 
 # -------------------Motor test code below----------------------------
 # pid(180)
 # time.sleep(1)
+# print("finished")
 # pid(0)
 # time.sleep(1)
 # del Rotation_Motor
+
+# ------------------End program code---------------------------------
+close_gpio()
+sio.disconnect()
+camera.close()
+del Rotation_Motor
+del Extension_Motor
+
+
+
 
 
 # -------------------Angle test code below----------------------------
