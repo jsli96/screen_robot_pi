@@ -17,7 +17,9 @@ ROTATION_VCC = 16  # Encoder power line
 IR_1 = 23  # IR Sensor 1
 IR_2 = 24  # IR Sensor 2
 IR_VCC = 18  # IR Sensor Power line
-
+TOUCH_1_OUT = 27
+TOUCH_2_OUT = 22
+SIO_STATUS = False
 # --------------------Here below initial function-------------------
 camera = PiCamera()
 URL_LOCAL = 'http://127.0.0.1:5000/'
@@ -26,8 +28,11 @@ IR_SENSOR_1 = DigitalInputDevice(IR_1)  # Set up IR sensor 1
 IR_SENSOR_2 = DigitalInputDevice(IR_2)  # Set up IR sensor 2
 ENCODER_VCC = DigitalOutputDevice(ROTATION_VCC, initial_value=True)
 IR_LED_VCC = DigitalOutputDevice(IR_VCC, initial_value=True)
+TOUCH_1 = DigitalOutputDevice(TOUCH_1_OUT, initial_value=False)
+TOUCH_2 = DigitalOutputDevice(TOUCH_2_OUT, initial_value=False)
 sio = socketio.Client()
 sio.connect(URL_CLOUD)
+SIO_STATUS = True
 POSITION = 0
 LENGTH = 0
 pi = pigpio.pi()
@@ -58,7 +63,6 @@ def close_gpio():
 
 
 def send_img(file_path):
-
     # img = cv.imread(file_path, cv.IMREAD_GRAYSCALE)  # Read first image
     # img = cv.resize(img, (0, 0), fx=0.5, fy=0.5)
     # size, data = cv.imencode('.png', img)
@@ -128,6 +132,7 @@ def ir(target):
         Extension_Motor.set_output(u_extension)
         ir_1_prev = ir_1_curr
         print("current length: ", LENGTH)
+    print("Action done")
 
 
 # ------------------Socket event--------------------------------
@@ -158,6 +163,25 @@ def start_send_img(data):
     return 'OK'
 
 
+@sio.on('distance')
+def reach_target(data):
+    print(data)
+    target = float(data)
+    ir(-1 * target)
+    time.sleep()
+
+
+@sio.on('angle')
+def angle(data):
+    global SIO_STATUS
+    print(data)
+    target = int(data)
+    pid(-1 * target)
+    time.sleep(1)
+    sio.disconnect()
+    SIO_STATUS = False
+
+
 # -------------------Main code start here----------------------------
 sio.emit("This is test in main function", "I am pi.")
 print("Start to take pictures")
@@ -182,11 +206,28 @@ send_img("img_3.jpg")
 pid(0)
 time.sleep(1.5)
 
+while True:
+    if not SIO_STATUS:
+        break
+
+# ------------------Touch Sensor test code--------------------------
+# pid(-10)
+# time.sleep(1)
+# #
+# # ir(-20)
+# # time.sleep(1)
+# TOUCH_1.on()
+# TOUCH_2.on()
+#
+# time.sleep(1)
+# TOUCH_1.off()
+# TOUCH_2.off()
+
+
 # ------------------IR sensor test code------------------------------
 
-ir(15)
-time.sleep(1)
-
+# ir(10)
+# time.sleep(1)
 
 
 # -------------------Motor test code below----------------------------
@@ -199,14 +240,9 @@ time.sleep(1)
 
 # ------------------End program code---------------------------------
 close_gpio()
-sio.disconnect()
 camera.close()
 del Rotation_Motor
 del Extension_Motor
-
-
-
-
 
 # -------------------Angle test code below----------------------------
 # Assigning parameter values
@@ -245,4 +281,3 @@ del Extension_Motor
 # print('Done.')
 # # Releasing GPIO pins
 # encoder.close()
-
