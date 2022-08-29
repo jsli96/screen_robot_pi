@@ -160,7 +160,7 @@ class Decoder:
 
 
 class PID:
-    def __init__(self, Ts, kp, ki, kd, u_max=0.075, u_min=-0.075, tau=0):
+    def __init__(self, Ts, kp, ki, kd, u_max=0.125, u_min=-0.125, tau=0):
         #
         self._Ts = Ts  # Sampling period (s)
         self._kp = kp  # Proportional gain

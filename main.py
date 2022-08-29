@@ -67,11 +67,11 @@ def send_img(file_path):
     img_1 = f.read()  # Read first image
     f.close()
     data = base64.b64encode(img_1)
-    if file_path == "sample_img/img_1.jpeg":
+    if file_path == "img_1.jpg":
         sio.emit('img_data_1', data)
-    elif file_path == "sample_img/img_2.jpeg":
+    elif file_path == "img_2.jpg":
         sio.emit('img_data_2', data)
-    elif file_path == "sample_img/img_3.jpeg":
+    elif file_path == "img_3.jpg":
         sio.emit('img_data_3', data)
     else:
         print("File name wrong.")
@@ -161,32 +161,32 @@ def start_send_img(data):
 # -------------------Main code start here----------------------------
 sio.emit("This is test in main function", "I am pi.")
 print("Start to take pictures")
-camera.capture('img_1.png')
+camera.capture('img_1.jpg')
 print("Image captured!")
-send_img("sample_img/img_1.jpeg")
+time.sleep(1)
+send_img("img_1.jpg")
 pid(30)
 time.sleep(0.5)
 print("Start to take pictures")
-camera.capture('img_2.png')
+camera.capture('img_2.jpg')
+time.sleep(1)
 print("Image captured!")
-send_img("sample_img/img_2.jpeg")
+send_img("img_2.jpg")
 pid(60)
 time.sleep(0.5)
 print("Start to take pictures")
-camera.capture('img_3.png')
+camera.capture('img_3.jpg')
+time.sleep(1)
 print("Image captured!")
-send_img("sample_img/img_3.jpeg")
+send_img("img_3.jpg")
 pid(0)
-time.sleep(0.5)
+time.sleep(1.5)
 
 # ------------------IR sensor test code------------------------------
 
 ir(15)
 time.sleep(1)
-ir(30)
-time.sleep(1)
-ir(45)
-time.sleep(1)
+
 
 
 # -------------------Motor test code below----------------------------
