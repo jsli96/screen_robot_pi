@@ -21,7 +21,7 @@ TOUCH_1_OUT = 27
 TOUCH_2_OUT = 22
 SIO_STATUS = False
 # --------------------Here below initial function-------------------
-camera = PiCamera()
+# camera = PiCamera()
 URL_LOCAL = 'http://127.0.0.1:5000/'
 URL_CLOUD = 'https://screen-bot-proj.herokuapp.com/'
 IR_SENSOR_1 = DigitalInputDevice(IR_1)  # Set up IR sensor 1
@@ -31,7 +31,7 @@ IR_LED_VCC = DigitalOutputDevice(IR_VCC, initial_value=True)
 TOUCH_1 = DigitalOutputDevice(TOUCH_1_OUT, initial_value=False)
 TOUCH_2 = DigitalOutputDevice(TOUCH_2_OUT, initial_value=False)
 sio = socketio.Client()
-sio.connect(URL_CLOUD)
+# sio.connect(URL_CLOUD)
 SIO_STATUS = True
 POSITION = 0
 LENGTH = 0
@@ -117,7 +117,7 @@ def ir(target):
     ki = 0.0
     kd = 0.0001
     tau_pid = 0.01
-    extension_pid = PID(t_sample, kp, ki, kd, u_max=0.3, u_min=-0.3, tau=tau_pid)
+    extension_pid = PID(t_sample, kp, ki, kd, u_max=0.05, u_min=-0.05, tau=tau_pid)
     while True:
         ir_1_curr = IR_SENSOR_1.value
         if target == LENGTH:
@@ -128,10 +128,10 @@ def ir(target):
             ir_minus()
         time.sleep(t_sample)
         u_extension = extension_pid.control(target, LENGTH)
-        # print("extension u: ", u_extension)
+        print("extension u: ", u_extension)
         Extension_Motor.set_output(u_extension)
         ir_1_prev = ir_1_curr
-        # print("current length: ", LENGTH)
+        print("current length: ", LENGTH)
     print("Action done")
 
 
@@ -165,73 +165,70 @@ def start_send_img(data):
 
 @sio.on('distance')
 def reach_target(data):
-    global POSITION, LENGTH
     print(data)
     target = float(data)
-    ir(-1 * target)
-    TOUCH_1.on()
-    TOUCH_2.on()
-    time.sleep(1)
-    print("touch released")
-    TOUCH_1.off()
-    TOUCH_2.off()
-    print("phase 1 done")
-    time.sleep(15)
-    pid(POSITION - 10)
-    ir(LENGTH - 100)
+    # ir(-1 * target)
+    # ir(-80)
+    # time.sleep(1)
 
 
 @sio.on('angle')
 def angle(data):
     global SIO_STATUS
     print(data)
-    target = int(data) * 2
-    pid(-target)
+    target = int(data)
+    pid(-60)
+    time.sleep(2)
+    ir(-80)
+    time.sleep(2)
     TOUCH_1.on()
     TOUCH_2.on()
-    time.sleep(1)
-    print("touch released")
+    time.sleep(2)
     TOUCH_1.off()
     TOUCH_2.off()
-    time.sleep(5)
+    pid(-40)
+    time.sleep(1)
+    ir(-50)
+    time.sleep(2)
+    TOUCH_1.on()
+    TOUCH_2.on()
+    time.sleep(2)
+    TOUCH_1.off()
+    TOUCH_2.off()
 
-
-
-@sio.on('shut_down')
-def shut_down(data):
-    global SIO_STATUS
     sio.disconnect()
     SIO_STATUS = False
 
 
 # -------------------Main code start here----------------------------
-sio.emit("This is test in main function", "I am pi.")
-print("Start to take pictures")
-camera.capture('img_1.jpg')
-print("Image captured!")
-time.sleep(1)
-send_img("img_1.jpg")
-pid(30)
-time.sleep(0.5)
-print("Start to take pictures")
-camera.capture('img_2.jpg')
-time.sleep(1)
-print("Image captured!")
-send_img("img_2.jpg")
-pid(60)
-time.sleep(0.5)
-print("Start to take pictures")
-camera.capture('img_3.jpg')
-time.sleep(1)
-print("Image captured!")
-send_img("img_3.jpg")
-pid(0)
-time.sleep(1.5)
-
-while True:
-    if not SIO_STATUS:
-        print("Shutting done pi.")
-        break
+# sio.emit("This is test in main function", "I am pi.")
+# print("Start to take pictures")
+# # camera.capture('img_1.jpg')
+# print("Image captured!")
+# time.sleep(1)
+# send_img("img_1.jpg")
+# pid(30)
+# time.sleep(0.5)
+# print("Start to take pictures")
+# # camera.capture('img_2.jpg')
+# time.sleep(1)
+# print("Image captured!")
+# send_img("img_2.jpg")
+# pid(60)
+# time.sleep(0.5)
+# print("Start to take pictures")
+# # camera.capture('img_3.jpg')
+# time.sleep(1)
+# print("Image captured!")
+# send_img("img_3.jpg")
+# pid(0)
+# time.sleep(1.5)
+#
+# while True:
+#     if not SIO_STATUS:
+#         print("Shutting done pi.")
+#         time.sleep(5)
+#         break
 
 # ------------------Touch Sensor test code--------------------------
 # pid(-10)
@@ -249,13 +246,13 @@ while True:
 
 # ------------------IR sensor test code------------------------------
 
-# ir(55)
+ir(-10)
 # time.sleep(1)
 # pid(80)
 # time.sleep(1)
 
 # -------------------Motor test code below----------------------------
-# pid(180)
+# pid(360)
 # time.sleep(1)
 # print("finished")
 # pid(0)
@@ -263,11 +260,6 @@ while True:
 # del Rotation_Motor
 
 # ------------------End program code---------------------------------
-camera.close()
-# pid(0)
-# time.sleep(1)
-ir(20)
-time.sleep(20)
 close_gpio()
 print("done with script")
 del Rotation_Motor
