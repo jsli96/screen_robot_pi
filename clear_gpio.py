@@ -40,7 +40,7 @@ def close_gpio():
 
 
 # ------------------End program code---------------------------------
-print("Turn off all gpio")
+print("Turn off all GPIO")
 del Rotation_Motor
 del Extension_Motor
 close_gpio()
