@@ -2,6 +2,7 @@ import pigpio
 from gpiozero import *
 from gpiozero_ext import Motor, PID
 
+
 # -------------------Here below GPIO are using general gpio library-------
 MOTOR_A_P1 = 6  # PWM input for extension motor
 MOTOR_A_P2 = 13  # Phase input for extension motor
@@ -17,8 +18,6 @@ TOUCH_1_OUT = 27
 TOUCH_2_OUT = 22
 SIO_STATUS = False
 # --------------------Here below initial function-------------------
-URL_LOCAL = 'http://127.0.0.1:5000/'
-URL_CLOUD = 'https://screen-bot-proj.herokuapp.com/'
 IR_SENSOR_1 = DigitalInputDevice(IR_1)  # Set up IR sensor 1
 IR_SENSOR_2 = DigitalInputDevice(IR_2)  # Set up IR sensor 2
 ENCODER_VCC = DigitalOutputDevice(ROTATION_VCC, initial_value=True)
