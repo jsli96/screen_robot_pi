@@ -21,7 +21,6 @@ TOUCH_1_OUT = 27
 TOUCH_2_OUT = 22
 # --------------------Here below initial function-------------------
 # camera = PiCamera()
-URL_LOCAL = 'http://127.0.0.1:5000/'
 URL_CLOUD = 'https://screen-bot-proj.herokuapp.com/'
 IR_SENSOR_1 = DigitalInputDevice(IR_1)  # Set up IR sensor 1
 IR_SENSOR_2 = DigitalInputDevice(IR_2)  # Set up IR sensor 2
@@ -92,7 +91,7 @@ def pid(target):
     motor_pid = PID(t_sample, kp, ki, kd, tau=tau_pid)
     theta_prev = 999
     # Start PID
-    print('Start Motor.')
+    print('Start Rotation.')
     while True:
         if abs(theta_prev) < 0.1:
             break
@@ -103,7 +102,7 @@ def pid(target):
         # print("u: ", u_curr)
         Rotation_Motor.set_output(u_curr)  # Assigning motor output
         theta_prev = target - POSITION  # Updating previous values
-    print("Done")
+    print("Rotation done")
     Rotation_Motor.set_output(0, brake=False)
 
 
@@ -116,7 +115,8 @@ def ir(target):
     ki = 0.0
     kd = 0.0001
     tau_pid = 0.01
-    extension_pid = PID(t_sample, kp, ki, kd, u_max=0.05, u_min=-0.05, tau=tau_pid)
+    extension_pid = PID(t_sample, kp, ki, kd, u_max=0.15, u_min=-0.15, tau=tau_pid)
+    print("Extension start")
     while True:
         ir_1_curr = IR_SENSOR_1.value
         if target == LENGTH:
@@ -127,11 +127,11 @@ def ir(target):
             ir_minus()
         time.sleep(t_sample)
         u_extension = extension_pid.control(target, LENGTH)
-        print("extension u: ", u_extension)
+        # print("extension u: ", u_extension)
         Extension_Motor.set_output(u_extension)
         ir_1_prev = ir_1_curr
-        print("current length: ", LENGTH)
-    print("Action done")
+        # print("current length: ", LENGTH)
+    print("Extension done")
 
 
 # ------------------Socket event--------------------------------
@@ -151,11 +151,6 @@ def disconnect():
     print("disconnected")
 
 
-@sio.on('receive finished')
-def disconnect():
-    sio.disconnect()
-
-
 @sio.on('request img')
 def start_send_img(data):
     print(data)
@@ -166,9 +161,7 @@ def start_send_img(data):
 def reach_target(data):
     print(data)
     target = float(data)
-    # ir(-1 * target)
-    # ir(-80)
-    # time.sleep(1)
+
 
 
 @sio.on('angle')
@@ -178,19 +171,10 @@ def angle(data):
 
 
 # ------------------IR sensor test code------------------------------
-
-# ir(20)
-# time.sleep(1)
-# pid(80)
-# time.sleep(1)
+# ir(40)
 
 # -------------------Motor test code below----------------------------
-pid(-30)
-# time.sleep(1)
-# print("finished")
-# pid(0)
-# time.sleep(1)
-# del Rotation_Motor
+# pid(30)
 
 # ------------------End program code---------------------------------
 close_gpio()

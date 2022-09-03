@@ -6,11 +6,12 @@ from picamera import PiCamera
 from gpiozero import *
 from gpiozero_ext import Motor, PID
 
+
 # -------------------Here below GPIO are using general gpio library-------
-MOTOR_A_PWM = 12  # PWM input for extension motor
-MOTOR_A_PHASE = 5  # Phase input for extension motor
-MOTOR_B_PWM = 13  # PWM input for rotation motor
-MOTOR_B_PHASE = 6  # Phase input for rotation motor
+MOTOR_A_P1 = 6  # PWM input for extension motor
+MOTOR_A_P2 = 13  # Phase input for extension motor
+MOTOR_B_P1 = 5  # PWM input for rotation motor
+MOTOR_B_P2 = 12  # Phase input for rotation motor
 ROTATION_C1 = 21  # Motor encoder C1
 ROTATION_C2 = 20  # Motor encoder C2
 ROTATION_VCC = 16  # Encoder power line
@@ -19,11 +20,8 @@ IR_2 = 24  # IR Sensor 2
 IR_VCC = 18  # IR Sensor Power line
 TOUCH_1_OUT = 27
 TOUCH_2_OUT = 22
-TARGET = 0
-SIO_STATUS = False
 # --------------------Here below initial function-------------------
 camera = PiCamera()
-URL_LOCAL = 'http://127.0.0.1:5000/'
 URL_CLOUD = 'https://screen-bot-proj.herokuapp.com/'
 IR_SENSOR_1 = DigitalInputDevice(IR_1)  # Set up IR sensor 1
 IR_SENSOR_2 = DigitalInputDevice(IR_2)  # Set up IR sensor 2
@@ -36,10 +34,11 @@ sio.connect(URL_CLOUD)
 SIO_STATUS = True
 POSITION = 0
 LENGTH = 0
+TARGET = 0
 pi = pigpio.pi()
-Rotation_Motor = Motor(pi=pi, pwm1=MOTOR_B_PHASE, pwm2=MOTOR_B_PWM, encoder1=ROTATION_C1,
+Rotation_Motor = Motor(pi=pi, pwm1=MOTOR_B_P1, pwm2=MOTOR_B_P2, encoder1=ROTATION_C1,
                        encoder2=ROTATION_C2, encoder_ppr=1666)
-Extension_Motor = Motor(pwm1=MOTOR_A_PHASE, pwm2=MOTOR_A_PWM)
+Extension_Motor = Motor(pwm1=MOTOR_A_P1, pwm2=MOTOR_A_P2)
 print("System initialized.")
 
 
@@ -64,10 +63,6 @@ def close_gpio():
 
 
 def send_img(file_path):
-    # img = cv.imread(file_path, cv.IMREAD_GRAYSCALE)  # Read first image
-    # img = cv.resize(img, (0, 0), fx=0.5, fy=0.5)
-    # size, data = cv.imencode('.png', img)
-    # data = base64.b64encode(data)
     f = open(file_path, "rb")
     img_1 = f.read()  # Read first image
     f.close()
@@ -100,9 +95,7 @@ def pid(target):
             break
         time.sleep(t_sample)  # Pausing for `t_sample` to give CPU time to process encoder signal
         POSITION = Rotation_Motor.get_angle()  # Getting motor shaft angular position
-        # print("Current angle: ", POSITION)
         u_curr = motor_pid.control(target, POSITION)  # Calculating closed-loop output
-        # print("u: ", u_curr)
         Rotation_Motor.set_output(u_curr)  # Assigning motor output
         theta_prev = target - POSITION  # Updating previous values
     print("Done")
@@ -129,10 +122,8 @@ def ir(target):
             ir_minus()
         time.sleep(t_sample)
         u_extension = extension_pid.control(target, LENGTH)
-        # print("extension u: ", u_extension)
         Extension_Motor.set_output(u_extension)
         ir_1_prev = ir_1_curr
-        # print("current length: ", LENGTH)
     print("Action done")
 
 
@@ -153,11 +144,6 @@ def disconnect():
     print("disconnected")
 
 
-@sio.on('receive finished')
-def disconnect():
-    sio.disconnect()
-
-
 @sio.on('request img')
 def start_send_img(data):
     print(data)
@@ -168,28 +154,12 @@ def start_send_img(data):
 def reach_target(data):
     global POSITION, LENGTH, TARGET
     print(data)
-    t_local = float(data)
-    pid(TARGET)
-    time.sleep(0.5)
-    ir(-1 * t_local)
-    TOUCH_1.on()
-    TOUCH_2.on()
-    time.sleep(1)
-    print("touch released")
-    TOUCH_1.off()
-    TOUCH_2.off()
-    print("phase 1 done")
-    time.sleep(15)
-    pid(POSITION - 10)
-    ir(LENGTH - 130)
 
 
 @sio.on('angle')
 def angle(data):
     global TARGET
     print(data)
-    TARGET = int(data) * -2
-
 
 
 @sio.on('shut_down')
@@ -221,46 +191,17 @@ time.sleep(1)
 print("Image captured!")
 send_img("img_3.jpg")
 pid(0)
-time.sleep(1.5)
+time.sleep(0.5)
 
-while True:
-    if not SIO_STATUS:
-        print("Shutting done pi.")
-        break
+# while True:
+#     if not SIO_STATUS:
+#         print("Shutting done pi.")
+#         break
 
-# ------------------Touch Sensor test code--------------------------
-# pid(-10)
-# time.sleep(1)
-# #
-# # ir(-20)
-# # time.sleep(1)
-# TOUCH_1.on()
-# TOUCH_2.on()
-#
-# time.sleep(1)
-# TOUCH_1.off()
-# TOUCH_2.off()
-
-
-# ------------------IR sensor test code------------------------------
-
-# ir(55)
-# time.sleep(1)
-# pid(80)
-# time.sleep(1)
-
-# -------------------Motor test code below----------------------------
-# pid(180)
-# time.sleep(1)
-# print("finished")
-# pid(0)
-# time.sleep(1)
-# del Rotation_Motor
 
 # ------------------End program code---------------------------------
 camera.close()
 ir(0)
-time.sleep(20)
 close_gpio()
 print("done with script")
 del Rotation_Motor
