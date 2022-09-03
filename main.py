@@ -19,6 +19,7 @@ IR_2 = 24  # IR Sensor 2
 IR_VCC = 18  # IR Sensor Power line
 TOUCH_1_OUT = 27
 TOUCH_2_OUT = 22
+TARGET = 0
 SIO_STATUS = False
 # --------------------Here below initial function-------------------
 camera = PiCamera()
@@ -165,10 +166,12 @@ def start_send_img(data):
 
 @sio.on('distance')
 def reach_target(data):
-    global POSITION, LENGTH
+    global POSITION, LENGTH, TARGET
     print(data)
-    target = float(data)
-    ir(-1 * target)
+    t_local = float(data)
+    pid(TARGET)
+    time.sleep(0.5)
+    ir(-1 * t_local)
     TOUCH_1.on()
     TOUCH_2.on()
     time.sleep(1)
@@ -178,22 +181,14 @@ def reach_target(data):
     print("phase 1 done")
     time.sleep(15)
     pid(POSITION - 10)
-    ir(LENGTH - 100)
+    ir(LENGTH - 130)
 
 
 @sio.on('angle')
 def angle(data):
-    global SIO_STATUS
+    global TARGET
     print(data)
-    target = int(data) * 2
-    pid(-target)
-    TOUCH_1.on()
-    TOUCH_2.on()
-    time.sleep(1)
-    print("touch released")
-    TOUCH_1.off()
-    TOUCH_2.off()
-    time.sleep(5)
+    TARGET = int(data) * -2
 
 
 
@@ -264,9 +259,7 @@ while True:
 
 # ------------------End program code---------------------------------
 camera.close()
-# pid(0)
-# time.sleep(1)
-ir(20)
+ir(0)
 time.sleep(20)
 close_gpio()
 print("done with script")

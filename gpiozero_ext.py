@@ -81,12 +81,12 @@ class Motor:
             output = -1
         if output > 0:  # Forward
             if self._drv8833:
-                self._pwm1.value = 0
-                self._pwm2.value = output
+                self._pwm1.value = output
+                self._pwm2.value = 0
         elif output < 0:  # Reverse
             if self._drv8833:
-                self._pwm1.value = -output
-                self._pwm2.value = 0
+                self._pwm1.value = 0
+                self._pwm2.value = -output
         else:
             if brake:
                 if self._drv8833:
@@ -160,7 +160,7 @@ class Decoder:
 
 
 class PID:
-    def __init__(self, Ts, kp, ki, kd, u_max=0.175, u_min=-0.175, tau=0):
+    def __init__(self, Ts, kp, ki, kd, u_max=0.2, u_min=-0.2, tau=0):
         #
         self._Ts = Ts  # Sampling period (s)
         self._kp = kp  # Proportional gain

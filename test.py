@@ -7,10 +7,10 @@ from gpiozero import *
 from gpiozero_ext import Motor, PID
 
 # -------------------Here below GPIO are using general gpio library-------
-MOTOR_A_PWM = 12  # PWM input for extension motor
-MOTOR_A_PHASE = 5  # Phase input for extension motor
-MOTOR_B_PWM = 13  # PWM input for rotation motor
-MOTOR_B_PHASE = 6  # Phase input for rotation motor
+MOTOR_A_P1 = 6  # PWM input for extension motor
+MOTOR_A_P2 = 13  # Phase input for extension motor
+MOTOR_B_P1 = 5  # PWM input for rotation motor
+MOTOR_B_P2 = 12  # Phase input for rotation motor
 ROTATION_C1 = 21  # Motor encoder C1
 ROTATION_C2 = 20  # Motor encoder C2
 ROTATION_VCC = 16  # Encoder power line
@@ -36,9 +36,9 @@ SIO_STATUS = True
 POSITION = 0
 LENGTH = 0
 pi = pigpio.pi()
-Rotation_Motor = Motor(pi=pi, pwm1=MOTOR_B_PHASE, pwm2=MOTOR_B_PWM, encoder1=ROTATION_C1,
+Rotation_Motor = Motor(pi=pi, pwm1=MOTOR_B_P1, pwm2=MOTOR_B_P2, encoder1=ROTATION_C1,
                        encoder2=ROTATION_C2, encoder_ppr=1666)
-Extension_Motor = Motor(pwm1=MOTOR_A_PHASE, pwm2=MOTOR_A_PWM)
+Extension_Motor = Motor(pwm1=MOTOR_A_P1, pwm2=MOTOR_A_P2)
 print("System initialized.")
 
 
@@ -176,83 +176,17 @@ def reach_target(data):
 def angle(data):
     global SIO_STATUS
     print(data)
-    target = int(data)
-    pid(-60)
-    time.sleep(2)
-    ir(-80)
-    time.sleep(2)
-    TOUCH_1.on()
-    TOUCH_2.on()
-    time.sleep(2)
-    TOUCH_1.off()
-    TOUCH_2.off()
-    pid(-40)
-    time.sleep(1)
-    ir(-50)
-    time.sleep(2)
-    TOUCH_1.on()
-    TOUCH_2.on()
-    time.sleep(2)
-    TOUCH_1.off()
-    TOUCH_2.off()
-
-    sio.disconnect()
-    SIO_STATUS = False
-
-
-# -------------------Main code start here----------------------------
-# sio.emit("This is test in main function", "I am pi.")
-# print("Start to take pictures")
-# # camera.capture('img_1.jpg')
-# print("Image captured!")
-# time.sleep(1)
-# send_img("img_1.jpg")
-# pid(30)
-# time.sleep(0.5)
-# print("Start to take pictures")
-# # camera.capture('img_2.jpg')
-# time.sleep(1)
-# print("Image captured!")
-# send_img("img_2.jpg")
-# pid(60)
-# time.sleep(0.5)
-# print("Start to take pictures")
-# # camera.capture('img_3.jpg')
-# time.sleep(1)
-# print("Image captured!")
-# send_img("img_3.jpg")
-# pid(0)
-# time.sleep(1.5)
-#
-# while True:
-#     if not SIO_STATUS:
-#         print("Shutting done pi.")
-#         time.sleep(5)
-#         break
-
-# ------------------Touch Sensor test code--------------------------
-# pid(-10)
-# time.sleep(1)
-# #
-# # ir(-20)
-# # time.sleep(1)
-# TOUCH_1.on()
-# TOUCH_2.on()
-#
-# time.sleep(1)
-# TOUCH_1.off()
-# TOUCH_2.off()
 
 
 # ------------------IR sensor test code------------------------------
 
-ir(-10)
+# ir(20)
 # time.sleep(1)
 # pid(80)
 # time.sleep(1)
 
 # -------------------Motor test code below----------------------------
-# pid(360)
+pid(-30)
 # time.sleep(1)
 # print("finished")
 # pid(0)
@@ -264,41 +198,3 @@ close_gpio()
 print("done with script")
 del Rotation_Motor
 del Extension_Motor
-
-# -------------------Angle test code below----------------------------
-# Assigning parameter values
-# ppr = 1666  # Pulses Per Revolution of the encoder
-# tstop = 20  # Loop execution duration (s)
-# tsample = 0.02  # Sampling period for code execution (s)
-# tdisp = 0.5  # Sampling period for values display (s)
-#
-# # Creating encoder object using GPIO pins
-# encoder = RotaryEncoder(ROTATION_C1, ROTATION_C2, max_steps=0)
-#
-# # Initializing previous values and starting main clock
-# anglecurr = 0
-# tprev = 0
-# tcurr = 0
-# tstart = time.perf_counter()
-#
-# # Execution loop that displays the current
-# # angular position of the encoder shaft
-# print('Running code for', tstop, 'seconds ...')
-# print('(Turn the encoder.)')
-# while tcurr <= tstop:
-#     # Pausing for `tsample` to give CPU time to process encoder signal
-#     time.sleep(tsample)
-#     # Getting current time (s)
-#     tcurr = time.perf_counter() - tstart
-#     # Getting angular position of the encoder
-#     # roughly every `tsample` seconds (deg.)
-#     anglecurr = 360 / ppr * encoder.steps
-#     # Printing angular position every `tdisp` seconds
-#     if (np.floor(tcurr/tdisp) - np.floor(tprev/tdisp)) == 1:
-#         print("Angle = {:0.0f} deg".format(anglecurr))
-#     # Updating previous values
-#     tprev = tcurr
-#
-# print('Done.')
-# # Releasing GPIO pins
-# encoder.close()
