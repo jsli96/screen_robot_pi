@@ -3,22 +3,6 @@ import pigpio
 from gpiozero import DigitalOutputDevice, PWMOutputDevice
 
 
-# class IR:
-#     def __init__(self, pi=None, gpio1=None, gpio2=None, callback=None):
-#         if pi:
-#             self.pi = pi
-#         if gpio1 and callback:
-#             pi.set_mode(gpio1, pigpio.INPUT)
-#
-#         self.cb_1 = pi.callback(gpio1, pigpio.RISING_EDGE, self._notify)
-#
-#     def _notify(self, gpio, level, tick):
-#         self.callback(1)
-#
-#     def __del__(self):
-#         self.cb_1.cancel()
-
-
 class Motor:
     def __init__(
             self, pi=None, enable1=None, enable2=None, pwm1=None, pwm2=None,

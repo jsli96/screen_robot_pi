@@ -19,7 +19,6 @@ IR_2 = 24  # IR Sensor 2
 IR_VCC = 18  # IR Sensor Power line
 TOUCH_1_OUT = 27
 TOUCH_2_OUT = 22
-SIO_STATUS = False
 # --------------------Here below initial function-------------------
 # camera = PiCamera()
 URL_LOCAL = 'http://127.0.0.1:5000/'
